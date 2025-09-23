@@ -7,12 +7,16 @@ import requests
 from typing import Generator, Optional
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import Column, Float, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from dotenv import load_dotenv
+
+
+
 
 # ---------------- Load Env Vars ----------------
 load_dotenv()
@@ -44,6 +48,8 @@ class ProductDB(Base):
     country_of_origin = Column(String(128), nullable=True)
     ocr_text = Column(Text, nullable=True)
     hardware_weight = Column(Float, nullable=True)
+    status = Column(String(50), nullable=False, default="pending")
+
 
 
 class ProductCreate(BaseModel):
@@ -66,6 +72,9 @@ class ProductOut(ProductCreate):
 
 app = FastAPI(title="SIH compliance backend - Minimal API")
 
+
+# serve the images folder as /static
+app.mount("/static", StaticFiles(directory="images"), name="static")
 # CORS for React
 app.add_middleware(
     CORSMiddleware,
@@ -92,7 +101,12 @@ def on_startup():
 # ---------------- DB Endpoints ----------------
 @app.post("/products", response_model=ProductOut)
 def create_product(payload: ProductCreate, db: Session = Depends(get_db)):
-    db_item = ProductDB(**payload.dict())
+    # Simple rule: if missing manufacturer, mrp, or country_of_origin → non-compliant
+    status = "compliant"
+    if not payload.manufacturer or not payload.country_of_origin or not payload.mrp:
+        status = "non-compliant"
+
+    db_item = ProductDB(**payload.dict(), status=status)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
@@ -120,16 +134,49 @@ def get_signature_key(key, date_stamp, region_name, service_name):
     return k_signing
 
 
+
+# ---------------- Stats Endpoint ----------------
+@app.get("/stats")
+def get_stats(db: Session = Depends(get_db)):
+    total = db.query(ProductDB).count()
+    compliant = db.query(ProductDB).filter(ProductDB.status == "compliant").count()
+    non_compliant = db.query(ProductDB).filter(ProductDB.status == "non-compliant").count()
+    pending = db.query(ProductDB).filter(ProductDB.status == "pending").count()
+
+    # # For now, let's mock compliant/non-compliant
+    # compliant = int(total * 0.75)   # 75% compliant (demo logic)
+    # non_compliant = int(total * 0.20)
+    # pending = total - compliant - non_compliant
+
+    return {
+        "total": total,
+        "compliant": compliant,
+        "non_compliant": non_compliant,
+        "pending": pending
+    }
+
 # ---------------- Amazon API Endpoint ----------------
+USE_DUMMY = True
 @app.get("/get-product/{asin}")
 def get_amazon_product(asin: str):
-    if not ACCESS_KEY or not SECRET_KEY or not PARTNER_TAG:
-        # fallback dummy response for testing
-        return {
-            "title": "Demo Product",
-            "image": "https://via.placeholder.com/200",
-            "price": "₹999",
+    if USE_DUMMY:
+        dummy_db = {
+            "B09G9BL5CP": {
+                "title": "Colgate Strong Teeth Anticavity Toothpaste, 200g",
+                "image": "http://127.0.0.1:8000/static/colgate.jpg",
+                "price": "₹95.00"
+            },
+            "B0CHX1TF4Z": {
+                "title": "Apple iPhone 15 Pro Max (256 GB, Natural Titanium)",
+                "image": "https://via.placeholder.com/200?text=iPhone15ProMax",
+                "price": "₹1,59,900"
+            }
         }
+        return dummy_db.get(asin, {
+            "title": f"Demo Product for ASIN {asin}",
+            "image": "https://via.placeholder.com/200?text=Demo",
+            "price": "₹999"
+        })
 
     payload = {
         "ItemIds": [asin],

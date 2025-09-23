@@ -6,6 +6,7 @@ import DashboardSummary from './components/DashboardSummary'
 import NavBar from './components/Navbar'
 import GeoTaggedCompliance from './components/GeoTaggedCompliance'
 import axios from 'axios'
+import ProductList from "./components/ProductList";
 
 const App = () => {
   const [asin, setAsin] = useState("")
@@ -54,6 +55,11 @@ const App = () => {
             <p>Price: {product.price}</p>
           </div>
         )}
+      </div>
+
+      {/* 📦 Product List Section */}
+      <div style={{ marginTop: "40px", padding: "20px" }}>
+        <ProductList />
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import {
   LineChart,
@@ -10,57 +11,45 @@ import {
   CartesianGrid,
 } from "recharts";
 
-// Initial summary values
-const initialSummaryData = [
-  { title: "Products Scanned", value: 1200 },
-  { title: "Compliant Products", value: 950 },
-  { title: "Non-Compliant Products", value: 180 },
-  { title: "Pending", value: 70 },
-];
-
-// Initial chart data
-const initialChartData = [
-  { day: "Mon", scanned: 200 },
-  { day: "Tue", scanned: 400 },
-  { day: "Wed", scanned: 600 },
-  { day: "Thu", scanned: 800 },
-  { day: "Fri", scanned: 1000 },
-  { day: "Sat", scanned: 1200 },
-];
-
-const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
 const DashboardSummary = () => {
-  const [summaryData, setSummaryData] = useState(initialSummaryData);
-  const [chartData, setChartData] = useState(initialChartData);
+  const [summaryData, setSummaryData] = useState([
+    { title: "Products Scanned", value: 0 },
+    { title: "Compliant Products", value: 0 },
+    { title: "Non-Compliant Products", value: 0 },
+    { title: "Pending", value: 0 },
+  ]);
+  const [chartData, setChartData] = useState([]);
   const [isCrawling, setIsCrawling] = useState(true);
 
-  // Dynamic update simulation
+  // Fetch stats from backend
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/stats");
+      const stats = res.data;
+
+      setSummaryData([
+        { title: "Products Scanned", value: stats.total },
+        { title: "Compliant Products", value: stats.compliant },
+        { title: "Non-Compliant Products", value: stats.non_compliant },
+        { title: "Pending", value: stats.pending },
+      ]);
+
+      // Update chart with scanned count
+      setChartData((prev) => {
+        const nextDay = new Date().toLocaleString("en-us", { weekday: "short" });
+        const newEntry = { day: nextDay, scanned: stats.total };
+        return [...prev, newEntry].slice(-6); // keep last 6
+      });
+    } catch (err) {
+      console.error("Error fetching stats", err);
+    }
+  };
+
+  // Polling every 5s when crawling is ON
   useEffect(() => {
     if (!isCrawling) return;
-
-    const interval = setInterval(() => {
-      // Update summary numbers
-      setSummaryData((prevData) =>
-        prevData.map((item) => ({
-          ...item,
-          value: item.value + Math.floor(Math.random() * 20),
-        }))
-      );
-
-      // Update chart data
-      setChartData((prevChart) => {
-        const lastIndex = daysOfWeek.indexOf(prevChart[prevChart.length - 1].day);
-        const nextIndex = (lastIndex + 1) % daysOfWeek.length;
-        const nextDay = daysOfWeek[nextIndex];
-        const lastValue = prevChart[prevChart.length - 1].scanned;
-        const nextValue = lastValue + Math.floor(Math.random() * 50);
-
-        const newChart = [...prevChart, { day: nextDay, scanned: nextValue }];
-        return newChart.slice(-6); // Keep last 6 points visible
-      });
-    }, 5000);
-
+    fetchStats();
+    const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
   }, [isCrawling]);
 
@@ -90,9 +79,9 @@ const DashboardSummary = () => {
         ))}
       </div>
 
-      {/* Right: Live Crawling + Analytics */}
+      {/* Right: Crawling + Chart */}
       <div className="w-full md:w-1/2 flex flex-col gap-4">
-        {/* Live Crawling Panel */}
+        {/* Crawling Control */}
         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg flex flex-col gap-3">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
             Live Crawling
@@ -120,7 +109,7 @@ const DashboardSummary = () => {
           </div>
         </div>
 
-        {/* Analytics / Charts */}
+        {/* Analytics Chart */}
         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
             Analytics / Charts
@@ -150,4 +139,3 @@ const DashboardSummary = () => {
 };
 
 export default DashboardSummary;
-
