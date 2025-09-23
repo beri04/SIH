@@ -4,6 +4,7 @@ import LogoWithTagline from '@/components/LogoWithTagline';
 import NavBar from '@/components/Navbar';
 import DashboardSummary from '@/components/DashboardSummary';
 import GeoTaggedCompliance from '@/components/GeoTaggedCompliance';
+import Footer from '@/components/Footer';
 
 
 const DashboardPage = () => {
@@ -14,6 +15,7 @@ const DashboardPage = () => {
       <NavBar />
       <DashboardSummary />    {/* Clickable summary cards */}
       <GeoTaggedCompliance />
+      <Footer/>
     </div>
   );
 };

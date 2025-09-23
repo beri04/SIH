@@ -3,8 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, FileText, BarChart, Upload, Settings, Bell } from "lucide-react";
 
 const navItems = [
-  { name: "Home", icon: <Home className="h-5 w-5" />, path: "/" },
-  { name: "About Niyantran", path: "/about" },
+  { name: "Home", icon: <Home className="h-5 w-5" />, path: "/",  },
+  { name: "About Niyantran", path: "/about"},
   { name: "Reports", icon: <FileText className="h-5 w-5" />, path: "/reports" },
   { name: "Trends", icon: <BarChart className="h-5 w-5" />, path: "/trends" },
   { name: "Upload Image", icon: <Upload className="h-5 w-5" />, path: "/upload" },
