@@ -1,21 +1,18 @@
-import React from 'react'
-import AnnouncementBar from './components/AnnouncementBar'
-import './index.css'
-import LogoWithTagline from './components/LogoWithTagline'
-import DashboardSummary from './components/DashboardSummary'
-import NavBar from './components/Navbar'
-import GeoTaggedCompliance from './components/GeoTaggedCompliance'
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import DashboardPage from './pages/Dashboardpage';
+import ProductList from './components/ProductList';
+import ComplianceUpload from './components/ComplianceUpload';
+import UploadImage from './components/UploadImage';
 
 const App = () => {
   return (
-    <div>
-      <AnnouncementBar/>
-      <LogoWithTagline/>
-      <NavBar/>
-      <DashboardSummary/>
-      <GeoTaggedCompliance/>
-    </div>
-  )
-}
+    <Routes>
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/products/:type" element={<ProductList />} />
+      <Route path="/upload" element={<  UploadImage />} />
+    </Routes>
+  );
+};
 
-export default App
+export default App;

@@ -65,9 +65,9 @@ const GeoTaggedCompliance = () => {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col md:flex-row w-full gap-6 p-4">
+    <div className="flex flex-col md:flex-row w-full gap-6 p-4 dark:bg-gray-900">
       {/* Map */}
-      <div className="w-full md:w-2/3 h-[650px] bg-white rounded-2xl shadow-lg p-4 relative">
+      <div className="w-full md:w-2/3 h-[650px] bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 relative">
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{ scale: 1000, center: [78.9629, 22.5937] }}
@@ -80,7 +80,7 @@ const GeoTaggedCompliance = () => {
                   (s) =>
                     s.state.toLowerCase() === geo.properties.st_nm?.toLowerCase()
                 );
-                const color = stateInfo ? getColor(stateInfo.compliance) : "#e0e0e0";
+                const color = stateInfo ? getColor(stateInfo.compliance) : "#6B7280"; // gray-500 for dark mode fallback
 
                 return (
                   <Geography
@@ -113,28 +113,28 @@ const GeoTaggedCompliance = () => {
             }
           </Geographies>
         </ComposableMap>
-        <ReactTooltip id="tooltip" />
+        <ReactTooltip id="tooltip" className="dark:bg-gray-700 dark:text-white" />
       </div>
 
       {/* Table (top 5 states) */}
-      <div className="w-full md:w-1/3 bg-white rounded-2xl shadow-lg p-4 overflow-auto">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">
+      <div className="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 overflow-auto">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
           Top States Compliance
         </h3>
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-gray-800 dark:text-gray-200">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-2 text-gray-700">State</th>
-              <th className="text-left py-2 text-gray-700">Compliance</th>
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="text-left py-2">State</th>
+              <th className="text-left py-2">Compliance</th>
             </tr>
           </thead>
           <tbody>
             {topStates.map((state, idx) => (
               <tr
                 key={idx}
-                className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <td className="py-2 text-gray-800">{state.state}</td>
+                <td className="py-2">{state.state}</td>
                 <td className="py-2 flex items-center gap-2">
                   <div
                     className="h-3 w-28 rounded-full"
@@ -145,9 +145,7 @@ const GeoTaggedCompliance = () => {
                       transition: "all 0.3s",
                     }}
                   />
-                  <span className="text-gray-800 font-medium">
-                    {state.compliance}%
-                  </span>
+                  <span className="font-medium">{state.compliance}%</span>
                 </td>
               </tr>
             ))}

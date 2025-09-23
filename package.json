@@ -16,6 +16,7 @@
     "@tailwindcss/vite": "^4.1.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "jspdf": "^3.0.3",
     "lucide-react": "^0.544.0",
     "next-themes": "^0.4.6",
     "prop-types": "^15.8.1",
@@ -28,7 +29,8 @@
     "react-tooltip": "^5.29.1",
     "recharts": "^3.2.1",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

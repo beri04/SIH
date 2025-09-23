@@ -9,8 +9,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { useNavigate } from "react-router-dom";
 
-// Initial summary values
 const initialSummaryData = [
   { title: "Products Scanned", value: 1200 },
   { title: "Compliant Products", value: 950 },
@@ -18,7 +18,6 @@ const initialSummaryData = [
   { title: "Pending", value: 70 },
 ];
 
-// Initial chart data
 const initialChartData = [
   { day: "Mon", scanned: 200 },
   { day: "Tue", scanned: 400 },
@@ -34,13 +33,12 @@ const DashboardSummary = () => {
   const [summaryData, setSummaryData] = useState(initialSummaryData);
   const [chartData, setChartData] = useState(initialChartData);
   const [isCrawling, setIsCrawling] = useState(true);
+  const navigate = useNavigate();
 
-  // Dynamic update simulation
   useEffect(() => {
     if (!isCrawling) return;
 
     const interval = setInterval(() => {
-      // Update summary numbers
       setSummaryData((prevData) =>
         prevData.map((item) => ({
           ...item,
@@ -48,7 +46,6 @@ const DashboardSummary = () => {
         }))
       );
 
-      // Update chart data
       setChartData((prevChart) => {
         const lastIndex = daysOfWeek.indexOf(prevChart[prevChart.length - 1].day);
         const nextIndex = (lastIndex + 1) % daysOfWeek.length;
@@ -57,21 +54,31 @@ const DashboardSummary = () => {
         const nextValue = lastValue + Math.floor(Math.random() * 50);
 
         const newChart = [...prevChart, { day: nextDay, scanned: nextValue }];
-        return newChart.slice(-6); // Keep last 6 points visible
+        return newChart.slice(-6);
       });
     }, 5000);
 
     return () => clearInterval(interval);
   }, [isCrawling]);
 
+  const handleCardClick = (title) => {
+    const key = title.toLowerCase().includes("compliant")
+      ? title.toLowerCase().replace(" ", "-")
+      : null;
+    if (key === "compliant-products") navigate("/products/compliant");
+    if (key === "non-compliant-products") navigate("/products/non-compliant");
+  };
+
   return (
-    <div className="mt-5 w-full flex flex-col md:flex-row gap-4 px-4 md:px-6">
+    <div className="mt-5 w-full flex flex-col md:flex-row gap-4 px-4 md:px-6 dark:bg-gray-900">
       {/* Left: Summary Cards */}
       <div className="w-full md:w-1/2 flex flex-wrap gap-4">
         {summaryData.map((item, idx) => (
           <Card
             key={idx}
-            className="w-[48%] p-5 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900"
+            onClick={() => handleCardClick(item.title)}
+            className="w-[48%] p-5 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer
+              bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900"
           >
             <CardHeader>
               <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-200">
@@ -79,10 +86,7 @@ const DashboardSummary = () => {
               </h3>
             </CardHeader>
             <CardContent>
-              <p
-                className="text-3xl sm:text-4xl md:text-5xl font-extrabold mt-2"
-                style={{ color: "#3c437c" }}
-              >
+              <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold mt-2 text-[#3c437c] dark:text-[#9fc5ff]">
                 {item.value}
               </p>
             </CardContent>
@@ -128,10 +132,20 @@ const DashboardSummary = () => {
           <div className="h-64 mt-3">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid stroke="#e0e0e0" strokeDasharray="4 4" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
+                <CartesianGrid
+                  stroke="#e0e0e0"
+                  strokeDasharray="4 4"
+                  className="dark:stroke-gray-700"
+                />
+                <XAxis dataKey="day" stroke="#555" className="dark:stroke-gray-300" />
+                <YAxis stroke="#555" className="dark:stroke-gray-300" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    borderColor: "#374151",
+                    color: "#fff",
+                  }}
+                />
                 <Line
                   type="monotone"
                   dataKey="scanned"
@@ -139,6 +153,7 @@ const DashboardSummary = () => {
                   strokeWidth={3}
                   dot={{ r: 5 }}
                   activeDot={{ r: 7 }}
+                  className="dark:stroke-[#9fc5ff]"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -150,4 +165,7 @@ const DashboardSummary = () => {
 };
 
 export default DashboardSummary;
+
+
+
 
